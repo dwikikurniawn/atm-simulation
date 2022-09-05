@@ -1,10 +1,14 @@
 package com.dwiki.atmsimulation.service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import com.dwiki.atmsimulation.constant.Constant;
 import com.dwiki.atmsimulation.model.Account;
+import com.dwiki.atmsimulation.model.Transaction;
 import com.dwiki.atmsimulation.util.DataUtil;
+import com.dwiki.atmsimulation.util.FileUtil;
 
 public class TransactionService {
 
@@ -43,7 +47,15 @@ public class TransactionService {
 	}
 
 	public void withDrawTransactionProcess(Integer amount, Account account) {
+		FileUtil fileUtil = new FileUtil();
+		Transaction transaction = new Transaction();
+		transaction.setAccountNumber(account.getAccountNumber());
+		transaction.setAmount(amount);
+		transaction.setType(Constant.TRANSACTION_TYPE_WITHDRAW);
+		transaction.setTime(Instant.now());
+		transaction.setRecepientAccountNumber("-");
 		account.setBalance(account.getBalance() - amount);
+		fileUtil.writeTransactionCsv(Constant.TRANSACTION_FILE_PATH, transaction);
 	}
 
 	public Boolean transferTransactionProcess(Account sourceAccount, List<Account> accounts,
@@ -55,14 +67,22 @@ public class TransactionService {
 			System.out.println("Transfer Failed!");
 			System.out.println("Account with account number: " + destinationAccountNumber + " is not found");
 			return Boolean.FALSE;
-		} else if(sourceAccount.equals(destinationAccount)) {
+		} else if (sourceAccount.equals(destinationAccount)) {
 			System.out.println("Transfer Failed!");
 			System.out.println("Destination Account can't be same as Source Account");
 			return Boolean.FALSE;
-		}
-		else {
+		} else {
+			FileUtil fileUtil = new FileUtil();
 			sourceAccount.setBalance(sourceAccount.getBalance() - transferAmount);
 			destinationAccount.setBalance(destinationAccount.getBalance() + transferAmount);
+			
+			Transaction transaction = new Transaction();
+			transaction.setAccountNumber(sourceAccount.getAccountNumber());
+			transaction.setAmount(transferAmount);
+			transaction.setType(Constant.TRANSACTION_TYPE_TRANSFER);
+			transaction.setTime(Instant.now());
+			transaction.setRecepientAccountNumber(destinationAccountNumber);
+			fileUtil.writeTransactionCsv(Constant.TRANSACTION_FILE_PATH, transaction);
 			return Boolean.TRUE;
 		}
 	}

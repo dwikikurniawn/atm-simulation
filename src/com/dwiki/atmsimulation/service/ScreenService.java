@@ -6,14 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.dwiki.atmsimulation.constant.Constant;
 import com.dwiki.atmsimulation.model.Account;
+import com.dwiki.atmsimulation.model.Transaction;
 import com.dwiki.atmsimulation.util.DataUtil;
+import com.dwiki.atmsimulation.util.FileUtil;
 
 public class ScreenService {
 
 	private final Scanner sc = new Scanner(System.in);
 	private final DataUtil dataUtil = new DataUtil();
-//	private TransactionService transactionService;
 
 	public Map<String, Object> loginScreen() {
 		System.out.println();
@@ -181,6 +183,7 @@ public class ScreenService {
 			transactionScreen(account, accounts);
 		} else {
 			System.out.println("Please choose between option 1, 2, 3, 4, or 5");
+			withDrawTransactionScreen(account, accounts);
 		}
 	}
 
@@ -192,13 +195,36 @@ public class ScreenService {
 		}
 	}
 
+	static void lastTransactionScreen(Account account) {
+		FileUtil fileUtil = new FileUtil();
+		Integer counter = 0;
+		List<Transaction> transactions = fileUtil.readTransactionCsv(Constant.TRANSACTION_FILE_PATH);
+		System.out.println();
+		System.out.println("Here is your last 10 transaction: ");
+		for (Transaction transaction : transactions) {
+			if (transaction.getAccountNumber().equalsIgnoreCase(account.getAccountNumber())
+					|| transaction.getRecepientAccountNumber().equalsIgnoreCase(account.getAccountNumber())) {
+				System.out.println();
+				System.out.println(" -Account Number: " + transaction.getAccountNumber() + "\n -Transaction Type: "
+						+ transaction.getType() + "\n -Amount: " + transaction.getAmount() + "\n -Date: "
+						+ transaction.getTime() + "\n -Recipient Account Number: "
+						+ transaction.getRecepientAccountNumber());
+				counter++;
+			}
+			if (counter == 10) {
+				break;
+			}
+		}
+	}
+
 	public void transactionScreen(Account account, List<Account> accounts) {
 		TransactionService transactionService = new TransactionService();
 		System.out.println();
 		System.out.println("Transaction Screen");
 		System.out.println("1. Withdraw");
 		System.out.println("2. Fund Transfer");
-		System.out.println("3. Exit");
+		System.out.println("3. Last Trasantion");
+		System.out.println("4. Exit");
 		System.out.println("Please choose option[3]:");
 		Integer transactionOption = sc.nextInt();
 		if (transactionOption == 1) {
@@ -208,10 +234,13 @@ public class ScreenService {
 			fundTransferTransactionScreen(account, accounts);
 			endTransactionScreen(account, accounts);
 		} else if (transactionOption == 3) {
+			lastTransactionScreen(account);
+			endTransactionScreen(account, accounts);
+		} else if (transactionOption == 4) {
 			exitTransactionScreen();
 			transactionService.mainApp(accounts);
 		} else {
-			System.out.println("Please choose between option 1, 2, or 3");
+			System.out.println("Please choose between option 1, 2, 3, or 4");
 			transactionScreen(account, accounts);
 		}
 	}
