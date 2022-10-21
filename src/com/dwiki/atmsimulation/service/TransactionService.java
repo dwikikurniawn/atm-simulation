@@ -2,7 +2,6 @@ package com.dwiki.atmsimulation.service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import com.dwiki.atmsimulation.constant.Constant;
 import com.dwiki.atmsimulation.model.Account;
@@ -12,7 +11,6 @@ import com.dwiki.atmsimulation.util.FileUtil;
 
 public class TransactionService {
 
-	private final ScreenService screenService = new ScreenService();
 	private final DataUtil dataUtil = new DataUtil();
 	private final AccountService accountService = new AccountService();
 
@@ -55,12 +53,32 @@ public class TransactionService {
 		transaction.setTime(Instant.now());
 		transaction.setRecepientAccountNumber("-");
 		account.setBalance(account.getBalance() - amount);
-		fileUtil.writeTransactionCsv(Constant.TRANSACTION_FILE_PATH, transaction);
+		fileUtil.saveTransaction(Constant.TRANSACTION_FILE_PATH, transaction);
 	}
 
 	public Boolean transferTransactionProcess(Account sourceAccount, List<Account> accounts,
 			String destinationAccountNumber, Integer transferAmount) {
 		Account destinationAccount = accountService.searchAccountByAccountNumber(accounts, destinationAccountNumber);
+		if (Boolean.TRUE.equals(
+				transferValidation(sourceAccount, destinationAccountNumber, transferAmount, destinationAccount))) {
+			FileUtil fileUtil = new FileUtil();
+			sourceAccount.setBalance(sourceAccount.getBalance() - transferAmount);
+			destinationAccount.setBalance(destinationAccount.getBalance() + transferAmount);
+
+			Transaction transaction = new Transaction();
+			transaction.setAccountNumber(sourceAccount.getAccountNumber());
+			transaction.setAmount(transferAmount);
+			transaction.setType(Constant.TRANSACTION_TYPE_TRANSFER);
+			transaction.setTime(Instant.now());
+			transaction.setRecepientAccountNumber(destinationAccountNumber);
+			fileUtil.saveTransaction(Constant.TRANSACTION_FILE_PATH, transaction);
+			return Boolean.TRUE;
+		}
+		return Boolean.FALSE;
+	}
+
+	private Boolean transferValidation(Account sourceAccount, String destinationAccountNumber, Integer transferAmount,
+			Account destinationAccount) {
 		if (Boolean.FALSE.equals(balanceValidation(sourceAccount, transferAmount))) {
 			return Boolean.FALSE;
 		} else if (destinationAccount == null) {
@@ -71,39 +89,24 @@ public class TransactionService {
 			System.out.println("Transfer Failed!");
 			System.out.println("Destination Account can't be same as Source Account");
 			return Boolean.FALSE;
-		} else {
-			FileUtil fileUtil = new FileUtil();
-			sourceAccount.setBalance(sourceAccount.getBalance() - transferAmount);
-			destinationAccount.setBalance(destinationAccount.getBalance() + transferAmount);
-			
-			Transaction transaction = new Transaction();
-			transaction.setAccountNumber(sourceAccount.getAccountNumber());
-			transaction.setAmount(transferAmount);
-			transaction.setType(Constant.TRANSACTION_TYPE_TRANSFER);
-			transaction.setTime(Instant.now());
-			transaction.setRecepientAccountNumber(destinationAccountNumber);
-			fileUtil.writeTransactionCsv(Constant.TRANSACTION_FILE_PATH, transaction);
-			return Boolean.TRUE;
 		}
+		return Boolean.TRUE;
 	}
 
-	public Account login(List<Account> accounts) {
-		Map<String, Object> loginScreenResult = screenService.loginScreen();
-		Account account = accountService.searchAccountByAccountNumberAndPin(accounts,
-				(String) loginScreenResult.get("accountNumber"), (String) loginScreenResult.get("pin"));
-		while (Boolean.FALSE.equals(loginScreenResult.get("valid")) || account == null) {
-			if (account == null && Boolean.TRUE.equals(loginScreenResult.get("valid"))) {
-				System.out.println("Account is not valid, please log in with correct account and pin");
-			}
-			loginScreenResult = screenService.loginScreen();
-			account = accountService.searchAccountByAccountNumberAndPin(accounts,
-					(String) loginScreenResult.get("accountNumber"), (String) loginScreenResult.get("pin"));
-		}
-		return account;
-	}
-
-	public void mainApp(List<Account> accounts) {
-		Account account = login(accounts);
-		screenService.transactionScreen(account, accounts);
+	public void lastTransaction(Account account) {
+		FileUtil fileUtil = new FileUtil();
+		List<Transaction> transactions = fileUtil.readTransactionCsv(Constant.TRANSACTION_FILE_PATH);
+		System.out.println();
+		System.out.println("Here is your last 10 transaction: ");
+		transactions.stream()
+				.filter(transaction -> transaction.getAccountNumber().equalsIgnoreCase(account.getAccountNumber())
+						|| transaction.getRecepientAccountNumber().equalsIgnoreCase(account.getAccountNumber()))
+				.limit(10).forEach(transaction -> {
+					System.out.println();
+					System.out.println(" -Account Number: " + transaction.getAccountNumber() + "\n -Transaction Type: "
+							+ transaction.getType() + "\n -Amount: " + transaction.getAmount() + "\n -Date: "
+							+ transaction.getTime() + "\n -Recipient Account Number: "
+							+ transaction.getRecepientAccountNumber());
+				});
 	}
 }

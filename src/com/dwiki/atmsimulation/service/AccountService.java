@@ -7,20 +7,14 @@ import com.dwiki.atmsimulation.model.Account;
 public class AccountService {
 
 	public Account searchAccountByAccountNumberAndPin(List<Account> accounts, String accountNumber, String pin) {
-		for (Account account : accounts) {
-			if (accountNumber.equalsIgnoreCase(account.getAccountNumber()) && pin.equalsIgnoreCase(account.getPin())) {
-				return account; 
-			}
-		}
-		return null;
+		return accounts.stream()
+				.filter(account -> accountNumber.equalsIgnoreCase(account.getAccountNumber()))
+				.filter(account -> pin.equalsIgnoreCase(account.getPin()))
+				.findAny().orElse(null);
 	}
-	
+
 	public Account searchAccountByAccountNumber(List<Account> accounts, String accountNumber) {
-		for (Account account : accounts) {
-			if (account.getAccountNumber().equalsIgnoreCase(accountNumber)) {
-				return account;
-			}
-		}
-		return null;
+		return accounts.stream().filter(account -> accountNumber.equalsIgnoreCase(account.getAccountNumber()))
+				.findAny().orElse(null);
 	}
 }
