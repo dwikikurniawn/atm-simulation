@@ -9,59 +9,50 @@ import java.io.OutputStreamWriter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.dwiki.atmsimulation.model.Account;
 import com.dwiki.atmsimulation.model.Transaction;
 
-
 public class FileUtil {
 
-public static final String CSV_SEPARATOR = ",";
-	
-	public List<Transaction> readTransactionCsv(String path) {
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(path));
-			List<Transaction> transactions = new ArrayList<>();
-			String line = br.readLine();
-			while (line != null) {
-				String[] values = line.split(",");
-				Transaction transaction = new Transaction(values[0].replaceAll("^\"|\"$", ""), values[1],
-						Integer.parseInt(values[2]), Instant.parse(values[3]), values[4].replaceAll("^\"|\"$", ""));
-				transactions.add(transaction);
-				line = br.readLine();
-			}
+	public static final String CSV_SEPARATOR = ",";
 
-			br.close();
-			return transactions;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return new ArrayList<>();
-	}
-	
-	public List<Account> readAccountCsv(String path) {
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(path));
-			List<Account> accounts = new ArrayList<>();
-			String line = br.readLine();
-			while (line != null) {
+	public List<Transaction> readTransactionCsv(String path) {
+		try (BufferedReader br = new BufferedReader(new FileReader(path))){
+			return br.lines().map(line -> {
 				String[] values = line.split(",");
-				Account account = new Account(values[0].replaceAll("^\"|\"$", ""), values[1], values[2],
-						Integer.parseInt(values[3].replaceAll("^\"|\"$", "")));
-				accounts.add(account);
-				line = br.readLine();
-			}
-			br.close();
-			return accounts;
+				return transactionsFromCsv(values);
+			}).collect(Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return new ArrayList<>();
 	}
-	
-	public void writeTransactionCsv(String path, Transaction transaction) {
+
+	private Transaction transactionsFromCsv(String[] values) {
+		return new Transaction(values[0].replaceAll("^\"|\"$", ""), values[1],
+				Integer.parseInt(values[2]), Instant.parse(values[3]), values[4].replaceAll("^\"|\"$", ""));
+	}
+
+	public List<Account> readAccountCsv(String path) {
+		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+			return br.lines().map(line -> {
+				String[] values = line.split(",");
+				return accountFromCsv(values);
+			}).collect(Collectors.toList());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new ArrayList<>();
+	}
+
+	private Account accountFromCsv(String[] values) {
+		return new Account(values[0].replaceAll("^\"|\"$", ""), values[1], values[2],
+				Integer.parseInt(values[3].replaceAll("^\"|\"$", "")));
+	}
+
+	public void saveTransaction(String path, Transaction transaction) {
 		try {
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path, true), "UTF-8"));
 			StringBuilder oneLine = new StringBuilder();

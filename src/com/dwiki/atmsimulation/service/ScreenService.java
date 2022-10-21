@@ -6,14 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import com.dwiki.atmsimulation.constant.Constant;
 import com.dwiki.atmsimulation.model.Account;
-import com.dwiki.atmsimulation.model.Transaction;
 import com.dwiki.atmsimulation.util.DataUtil;
-import com.dwiki.atmsimulation.util.FileUtil;
 
 public class ScreenService {
 
+	private final TransactionService transactionService = new TransactionService();
+	private final AuthService authService = new AuthService();
 	private final Scanner sc = new Scanner(System.in);
 	private final DataUtil dataUtil = new DataUtil();
 
@@ -57,7 +56,6 @@ public class ScreenService {
 	}
 
 	public void otherWithDrawTransaction(Account account) {
-		TransactionService transactionService = new TransactionService();
 		System.out.println("Other Withdraw Screen");
 		System.out.println("Other Withdraw");
 		System.out.println("Enter amount to withdraw");
@@ -77,7 +75,6 @@ public class ScreenService {
 	}
 
 	public void endTransactionScreen(Account account, List<Account> accounts) {
-		TransactionService transactionService = new TransactionService();
 		System.out.println();
 		System.out.println("1. Transaction");
 		System.out.println("2. Exit");
@@ -87,7 +84,7 @@ public class ScreenService {
 			transactionScreen(account, accounts);
 		} else if (summaryOption == 2) {
 			exitTransactionScreen();
-			transactionService.mainApp(accounts);
+			authService.login(accounts);
 		} else {
 			System.out.println("Please choose option 1 or 2");
 			endTransactionScreen(account, accounts);
@@ -96,7 +93,6 @@ public class ScreenService {
 
 	void transferConfirmationScreen(Account account, List<Account> accounts, String destinationAccountNumber,
 			Integer transferAmount, Integer referenceNumber) {
-		TransactionService transactionService = new TransactionService();
 		System.out.println();
 		System.out.println();
 		System.out.println("Transfer Confirmation");
@@ -120,7 +116,6 @@ public class ScreenService {
 	}
 
 	void fundTransferTransactionScreen(Account account, List<Account> accounts) {
-		TransactionService transactionService = new TransactionService();
 		System.out.println("Fund Transfer Screen");
 		System.out.println(
 				"Please enter destination account and press enter to continue or press cancel (Esc) to go back to Transaction: ");
@@ -157,7 +152,6 @@ public class ScreenService {
 	}
 
 	public void withDrawTransactionScreen(Account account, List<Account> accounts) {
-		TransactionService transactionService = new TransactionService();
 		System.out.println();
 		System.out.println("Withdraw Screen");
 		System.out.println("1. $10");
@@ -195,30 +189,7 @@ public class ScreenService {
 		}
 	}
 
-	static void lastTransactionScreen(Account account) {
-		FileUtil fileUtil = new FileUtil();
-		Integer counter = 0;
-		List<Transaction> transactions = fileUtil.readTransactionCsv(Constant.TRANSACTION_FILE_PATH);
-		System.out.println();
-		System.out.println("Here is your last 10 transaction: ");
-		for (Transaction transaction : transactions) {
-			if (transaction.getAccountNumber().equalsIgnoreCase(account.getAccountNumber())
-					|| transaction.getRecepientAccountNumber().equalsIgnoreCase(account.getAccountNumber())) {
-				System.out.println();
-				System.out.println(" -Account Number: " + transaction.getAccountNumber() + "\n -Transaction Type: "
-						+ transaction.getType() + "\n -Amount: " + transaction.getAmount() + "\n -Date: "
-						+ transaction.getTime() + "\n -Recipient Account Number: "
-						+ transaction.getRecepientAccountNumber());
-				counter++;
-			}
-			if (counter == 10) {
-				break;
-			}
-		}
-	}
-
 	public void transactionScreen(Account account, List<Account> accounts) {
-		TransactionService transactionService = new TransactionService();
 		System.out.println();
 		System.out.println("Transaction Screen");
 		System.out.println("1. Withdraw");
@@ -234,11 +205,11 @@ public class ScreenService {
 			fundTransferTransactionScreen(account, accounts);
 			endTransactionScreen(account, accounts);
 		} else if (transactionOption == 3) {
-			lastTransactionScreen(account);
+			transactionService.lastTransaction(account);
 			endTransactionScreen(account, accounts);
 		} else if (transactionOption == 4) {
 			exitTransactionScreen();
-			transactionService.mainApp(accounts);
+			authService.login(accounts);
 		} else {
 			System.out.println("Please choose between option 1, 2, 3, or 4");
 			transactionScreen(account, accounts);
