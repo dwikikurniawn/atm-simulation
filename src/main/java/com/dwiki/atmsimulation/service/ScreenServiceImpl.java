@@ -8,11 +8,16 @@ import java.util.Scanner;
 
 import com.dwiki.atmsimulation.model.Account;
 import com.dwiki.atmsimulation.util.DataUtil;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Service;
 
-public class ScreenService {
+@Service
+@AllArgsConstructor
+public class ScreenServiceImpl {
+/*
+	private final TransactionServiceImpl transactionServiceImpl;
 
-	private final TransactionService transactionService = new TransactionService();
-	private final AuthService authService = new AuthService();
 	private final Scanner sc = new Scanner(System.in);
 	private final DataUtil dataUtil = new DataUtil();
 
@@ -60,14 +65,14 @@ public class ScreenService {
 		System.out.println("Other Withdraw");
 		System.out.println("Enter amount to withdraw");
 		Integer amountWithdraw = sc.nextInt();
-		Boolean amountValidation = transactionService.amountWithDrawValidation(amountWithdraw);
+		Boolean amountValidation = transactionServiceImpl.amountWithDrawValidation(amountWithdraw);
 		while (Boolean.FALSE.equals(amountValidation)) {
 			System.out.println("Other Withdraw");
 			System.out.println("Enter amount to withdraw");
 			amountWithdraw = sc.nextInt();
-			amountValidation = transactionService.amountWithDrawValidation(amountWithdraw);
+			amountValidation = transactionServiceImpl.amountWithDrawValidation(amountWithdraw);
 		}
-		finalWithdrawProcess(account, transactionService, amountWithdraw);
+		finalWithdrawProcess(account, transactionServiceImpl, amountWithdraw);
 	}
 
 	public void exitTransactionScreen() {
@@ -84,7 +89,7 @@ public class ScreenService {
 			transactionScreen(account, accounts);
 		} else if (summaryOption == 2) {
 			exitTransactionScreen();
-			authService.login(accounts);
+			authServiceImpl.login(accounts);
 		} else {
 			System.out.println("Please choose option 1 or 2");
 			endTransactionScreen(account, accounts);
@@ -105,7 +110,7 @@ public class ScreenService {
 		System.out.println("Choose option[2]: ");
 		Integer transferConfirmationOption = sc.nextInt();
 		if (transferConfirmationOption == 1) {
-			if (Boolean.TRUE.equals(transactionService.transferTransactionProcess(account, accounts,
+			if (Boolean.TRUE.equals(transactionServiceImpl.transferTransactionProcess(account,
 					destinationAccountNumber, transferAmount))) {
 				summaryTransferScreen(transferAmount, account, destinationAccountNumber, referenceNumber);
 			}
@@ -132,12 +137,12 @@ public class ScreenService {
 		System.out.println(
 				"Please enter transfer amount and press enter to continue or press enter to go back to Transaction: ");
 		Integer transferAmount = sc.nextInt();
-		Boolean transferAmountValidaiton = transactionService.amountTransferValidation(transferAmount);
+		Boolean transferAmountValidaiton = transactionServiceImpl.amountTransferValidation(transferAmount);
 		while (Boolean.FALSE.equals(transferAmountValidaiton)) {
 			System.out.println(
 					"Please enter transfer amount and press enter to continue or press enter to go back to Transaction: ");
 			transferAmount = sc.nextInt();
-			transferAmountValidaiton = transactionService.amountTransferValidation(transferAmount);
+			transferAmountValidaiton = transactionServiceImpl.amountTransferValidation(transferAmount);
 		}
 
 		Integer referenceNumber = dataUtil.generateReferenceNumber();
@@ -164,13 +169,13 @@ public class ScreenService {
 
 		if (withdrawOption == 1) {
 			Integer finalAmountWithDraw = 10;
-			finalWithdrawProcess(account, transactionService, finalAmountWithDraw);
+			finalWithdrawProcess(account, transactionServiceImpl, finalAmountWithDraw);
 		} else if (withdrawOption == 2) {
 			Integer finalAmountWithDraw = 50;
-			finalWithdrawProcess(account, transactionService, finalAmountWithDraw);
+			finalWithdrawProcess(account, transactionServiceImpl, finalAmountWithDraw);
 		} else if (withdrawOption == 3) {
 			Integer finalAmountWithDraw = 100;
-			finalWithdrawProcess(account, transactionService, finalAmountWithDraw);
+			finalWithdrawProcess(account, transactionServiceImpl, finalAmountWithDraw);
 		} else if (withdrawOption == 4) {
 			otherWithDrawTransaction(account);
 		} else if (withdrawOption == 5) {
@@ -181,10 +186,10 @@ public class ScreenService {
 		}
 	}
 
-	public void finalWithdrawProcess(Account account, TransactionService transactionService,
+	public void finalWithdrawProcess(Account account, TransactionServiceImpl transactionServiceImpl,
 			Integer finalAmountWithDraw) {
-		if (Boolean.TRUE.equals(transactionService.balanceValidation(account, finalAmountWithDraw))) {
-			transactionService.withDrawTransactionProcess(finalAmountWithDraw, account);
+		if (Boolean.TRUE.equals(transactionServiceImpl.balanceValidation(account, finalAmountWithDraw))) {
+			transactionServiceImpl.withDrawTransactionProcess(finalAmountWithDraw, account);
 			summaryWithDrawScreen(finalAmountWithDraw, account);
 		}
 	}
@@ -205,14 +210,14 @@ public class ScreenService {
 			fundTransferTransactionScreen(account, accounts);
 			endTransactionScreen(account, accounts);
 		} else if (transactionOption == 3) {
-			transactionService.lastTransaction(account);
+			transactionServiceImpl.lastTransaction(account);
 			endTransactionScreen(account, accounts);
 		} else if (transactionOption == 4) {
 			exitTransactionScreen();
-			authService.login(accounts);
+			authServiceImpl.login(accounts);
 		} else {
 			System.out.println("Please choose between option 1, 2, 3, or 4");
 			transactionScreen(account, accounts);
 		}
-	}
+	}*/
 }

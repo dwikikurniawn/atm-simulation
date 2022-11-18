@@ -1,7 +1,10 @@
 package com.dwiki.atmsimulation.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Random;
 
+@Component
 public class DataUtil {
 
 	public boolean isNumeric(String str) {
