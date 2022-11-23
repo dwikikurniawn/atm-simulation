@@ -7,16 +7,10 @@ import java.util.List;
 
 public interface TransactionService {
 
-    boolean balanceValidation(Account account, Integer amount);
+    void withDrawTransactionProcess(Integer amount, String accountNumber);
 
-    boolean amountWithDrawValidation(Integer amountWithdraw);
-
-    boolean amountTransferValidation(Integer amountTransfer);
-
-    void withDrawTransactionProcess(Integer amount, Account account);
-
-    boolean transferTransactionProcess(Account sourceAccount,
+    boolean transferTransactionProcess(String sourceAccountNumber,
                                        String destinationAccountNumber, Integer transferAmount);
 
-    List<Transaction> lastTransaction(Account account);
+    List<Transaction> lastTransaction(String accountNumber);
 }
