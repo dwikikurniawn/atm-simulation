@@ -13,22 +13,18 @@ public class DataUtil {
 	
 	public boolean accountNumberValidationFormat(String accountNumber) {
 		if (!isNumeric(accountNumber)) {
-			System.out.println("Account Number should only contains numbers");
-			return Boolean.FALSE;
+			throw new NumberFormatException("Account Number should only contains numbers");
 		} else if (accountNumber.length() != 6) {
-			System.out.println("Account Number should have 6 digits length");
-			return Boolean.FALSE;
+			throw new NumberFormatException("Account Number should have 6 digits length");
 		}
 		return Boolean.TRUE;
 	}
 	
 	public boolean pinValidationFormat(String pin) {
 		if (!isNumeric(pin)) {
-			System.out.println("PIN should only contains numbers");
-			return Boolean.FALSE;
+			throw new NumberFormatException("PIN should only contains numbers");
 		} else if (pin.length() > 6) {
-			System.out.println("PIN should have 6 digits length");
-			return Boolean.FALSE;
+			throw new NumberFormatException("PIN should have 6 digits length");
 		}
 		return Boolean.TRUE;
 	}

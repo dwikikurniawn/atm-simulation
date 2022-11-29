@@ -12,6 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -22,41 +24,36 @@ public class TransactionServiceImpl implements TransactionService{
 	private final AccountRepository accountRepository;
 	private final TransactionRepository transactionRepository;
 
-	private boolean balanceValidation(Account account, Integer amount) {
+	private void balanceValidation(Account account, Integer amount) {
 		if (account.getBalance() < amount) {
-			log.info("Insufficient balance $" + amount);
-			return Boolean.FALSE;
+			throw new NumberFormatException("Insufficient balance $" + amount);
 		}
-		return Boolean.TRUE;
 	}
 
-	private boolean amountWithDrawValidation(Integer amountWithdraw) {
+	private void amountWithDrawValidation(Integer amountWithdraw) {
 		if (!dataUtil.isNumeric(Integer.toString(amountWithdraw)) || amountWithdraw % 10 != 0) {
-			log.info("Invalid amount");
-			return Boolean.FALSE;
+			throw new NumberFormatException("Invalid amount");
 		} else if (amountWithdraw > 1000) {
-			log.info("Maximum amount to withdraw is $1000");
-			return Boolean.FALSE;
+			throw new NumberFormatException("Maximum amount to withdraw is $1000");
 		}
-		return Boolean.TRUE;
 	}
 
-	private boolean amountTransferValidation(Integer amountTransfer) {
+	private void amountTransferValidation(Integer amountTransfer) {
 		if (!dataUtil.isNumeric(Integer.toString(amountTransfer))) {
-			log.info("Invalid amount");
-			return Boolean.FALSE;
+			throw new NumberFormatException("Invalid amount");
 		} else if (amountTransfer > 1000 || amountTransfer < 1) {
-			log.info("Maximum amount to withdraw is $1000");
-			return Boolean.FALSE;
+			throw new NumberFormatException("Maximum amount to withdraw is $1000");
 		}
-		return Boolean.TRUE;
 	}
 
 	@Override
 	public void withDrawTransactionProcess(Integer amount, String sourceAccountNumber) {
 
 		Transaction transaction = new Transaction();
-		Account account = accountRepository.findById(sourceAccountNumber).orElse(null);
+		Account account = accountService.searchAccountByAccountNumber(sourceAccountNumber);
+		amountWithDrawValidation(amount);
+		balanceValidation(account, amount);
+
 		transaction.setSourceAccountNumber(account.getAccountNumber());
 		transaction.setAmount(amount);
 		transaction.setType(Constant.TRANSACTION_TYPE_WITHDRAW);
@@ -68,53 +65,39 @@ public class TransactionServiceImpl implements TransactionService{
 	}
 
 	@Override
-	public boolean transferTransactionProcess(String sourceAccountNumber,
+	public void transferTransactionProcess(String sourceAccountNumber,
 			String destinationAccountNumber, Integer transferAmount) {
-		Account sourceAccount = accountRepository.findById(sourceAccountNumber).orElse(null);
+		Account sourceAccount = accountService.searchAccountByAccountNumber(sourceAccountNumber);
 		Account destinationAccount = accountService.searchAccountByAccountNumber(destinationAccountNumber);
-		if (Boolean.TRUE.equals(
-				transferValidation(sourceAccount, destinationAccountNumber, transferAmount, destinationAccount))) {
-			sourceAccount.setBalance(sourceAccount.getBalance() - transferAmount);
-			destinationAccount.setBalance(destinationAccount.getBalance() + transferAmount);
+		amountTransferValidation(transferAmount);
+		balanceValidation(sourceAccount, transferAmount);
+		transferValidation(sourceAccount, destinationAccountNumber, transferAmount, destinationAccount);
 
-			Transaction transaction = new Transaction();
-			transaction.setSourceAccountNumber(sourceAccount.getAccountNumber());
-			transaction.setAmount(transferAmount);
-			transaction.setType(Constant.TRANSACTION_TYPE_TRANSFER);
-			transaction.setRecipientAccountNumber(destinationAccountNumber);
+		sourceAccount.setBalance(sourceAccount.getBalance() - transferAmount);
+		destinationAccount.setBalance(destinationAccount.getBalance() + transferAmount);
 
-			transactionRepository.save(transaction);
-			accountRepository.save(sourceAccount);
-			accountRepository.save(destinationAccount);
+		Transaction transaction = new Transaction();
+		transaction.setSourceAccountNumber(sourceAccount.getAccountNumber());
+		transaction.setAmount(transferAmount);
+		transaction.setType(Constant.TRANSACTION_TYPE_TRANSFER);
+		transaction.setRecipientAccountNumber(destinationAccountNumber);
 
-			return Boolean.TRUE;
-		}
-		return Boolean.FALSE;
+		transactionRepository.save(transaction);
+		accountRepository.save(sourceAccount);
+		accountRepository.save(destinationAccount);
 	}
 
-	private boolean transferValidation(Account sourceAccount, String destinationAccountNumber, Integer transferAmount,
+	private void transferValidation(Account sourceAccount, String destinationAccountNumber, Integer transferAmount,
 			Account destinationAccount) {
-		if(Boolean.FALSE.equals(amountTransferValidation(transferAmount))){
-			return Boolean.FALSE;
+		 if (sourceAccount.equals(destinationAccount)) {
+			 throw new NumberFormatException("Transfer Failed, Destination Account can't be same as Source Account");
 		}
-		else if (Boolean.FALSE.equals(balanceValidation(sourceAccount, transferAmount))) {
-			return Boolean.FALSE;
-		} else if (destinationAccount == null) {
-			log.info("Transfer Failed!");
-			log.info("Account with account number: " + destinationAccountNumber + " is not found");
-			return Boolean.FALSE;
-		} else if (sourceAccount.equals(destinationAccount)) {
-			log.info("Transfer Failed!");
-			log.info("Destination Account can't be same as Source Account");
-			return Boolean.FALSE;
-		}
-		return Boolean.TRUE;
 	}
 
 	@Override
 	public List<Transaction> lastTransaction(String accountNumber) {
 		log.info("lastTransaction() accountNumber: {}", accountNumber);
-		Account account = accountRepository.findById(accountNumber).orElse(null);
+		Account account = accountService.searchAccountByAccountNumber(accountNumber);
 		return transactionRepository.findTop10BySourceAccountNumberOrRecipientAccountNumberOrderByTimeDesc(account.getAccountNumber(), account.getAccountNumber());
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.dwiki.atmsimulation.model.Account;
+import com.dwiki.atmsimulation.util.DataUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class AuthServiceImpl implements AuthService{
 	private final AccountService accountService;
+
+    private final DataUtil dataUtil;
 
 //	public Account loginValidation(List<Account> accounts) {
 //		Map<String, Object> loginScreenResult = screenServiceImpl.loginScreen();

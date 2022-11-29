@@ -9,7 +9,8 @@ public interface TransactionService {
 
     void withDrawTransactionProcess(Integer amount, String accountNumber);
 
-    boolean transferTransactionProcess(String sourceAccountNumber,
+    void
+    transferTransactionProcess(String sourceAccountNumber,
                                        String destinationAccountNumber, Integer transferAmount);
 
     List<Transaction> lastTransaction(String accountNumber);

@@ -9,5 +9,4 @@ public interface AccountService {
 
     Account searchAccountByAccountNumber(String accountNumber);
 
-    List<Account> getAllAccount();
 }
