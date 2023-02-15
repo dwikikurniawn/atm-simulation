@@ -12,13 +12,13 @@
   <h1>Custom Withdraw - ATM</h1>
   <hr>
   <div class="">
-    <h3 access="false" id="control-9987720">Current Balance: $ ${balance}</h3>
+    <h3 access="false" id="control-9987720">Current Balance: $ ${account.balance}</h3>
   </div>
   <div class="">
     <h3 access="false" id="control-6741689">Other Withdraw</h3>
   </div>
 
-  <form action="/transaction/withdraw/${accountNumber}" method="post">
+  <form action="/transaction/withdraw" method="post">
     <div class="formbuilder-text form-group field-field-pin-number">
       <label for="field-pin-number" class="formbuilder-text-label">Withdraw Amount</label> </br>
       <input type="number" class="form-control" name="amount" maxlength="4" id="amount" placeholder="$">

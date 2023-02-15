@@ -9,28 +9,32 @@
         <table>
             <thead>
                 <tr>
+                    <th>Transaction ID</th>
                     <th>Source Account Number</th>
                     <th>Type</th>
                     <th>Amount</th>
                     <th>Time</th>
                     <th>Recipient Account Number</th>
+                    <th>Reference Number</th>
                 </tr>
             </thead>
             <tbody>
                 <c:forEach items="${transactions}" var="transaction">
                     <tr>
+                        <td>${transaction.id}</td>
                         <td>${transaction.sourceAccountNumber}</td>
                         <td>${transaction.type}</td>
                         <td>${transaction.amount}</td>
                         <td>${transaction.time}</td>
                         <td>${transaction.recipientAccountNumber}</td>
+                        <td>${transaction.referenceNumber}</td>
                     </tr>
                 </c:forEach>
             </tbody>
         </table>
     </body>
     <div class="navigationbutton">
-                  <form action="/dashboard/${accountNumber}" method="get">
+                  <form action="/dashboard" method="get">
                     <button type="submit" class="btn-default btn">Back</button>
                   </form>
     </div>

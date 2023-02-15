@@ -11,7 +11,7 @@
 <body>
   <h1>Transfer Screen</h1>
   <hr>
-  <form action="/transaction/transfer/${accountNumber}" method="post">
+  <form action="/transaction/transfer-confirmation" method="get">
     <div class="formbuilder-text form-group field-field-account-number">
       <label for="field-account-number" class="formbuilder-text-label">Recipient Account Number</label></br>
       <input type="number" class="form-control" name="recipientAccountNumber" maxlength="6">
@@ -27,7 +27,7 @@
     </div>
   </form>
   <br>
-  <form action="/dashboard/${accountNumber}" method="get">
+  <form action="/dashboard" method="get">
     <button type="submit" class="btn-default btn">Cancel</button>
   </form>
 </body>
