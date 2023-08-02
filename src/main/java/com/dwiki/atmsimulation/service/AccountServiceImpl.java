@@ -1,5 +1,6 @@
 package com.dwiki.atmsimulation.service;
 
+import com.dwiki.atmsimulation.LoginDto;
 import com.dwiki.atmsimulation.model.Account;
 import com.dwiki.atmsimulation.repository.AccountRepository;
 import com.dwiki.atmsimulation.util.DataUtil;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -20,7 +22,17 @@ public class AccountServiceImpl implements AccountService{
 	@Override
 	public Account searchAccountByAccountNumberAndPin(String accountNumber, String pin) {
 		if (isInvalidFormatPinOrAccount(accountNumber, pin))
-			throw new RuntimeException("Unhandled exception");
+			throw new RuntimeException("Invalid format for Account Number/ Pin");
+		return accountRepository.findByAccountNumberAndPin(accountNumber, pin).orElseThrow(() ->
+				new EntityNotFoundException("Account number " + accountNumber + " not found"));
+	}
+
+	@Override
+	public Account getAccountByAccountNumberAndPin(LoginDto loginDto) {
+		String accountNumber = loginDto.getAccountNumber();
+		String pin = loginDto.getPin();
+		if (isInvalidFormatPinOrAccount(accountNumber, pin))
+			throw new RuntimeException("Invalid format for Account Number/ Pin");
 		return accountRepository.findByAccountNumberAndPin(accountNumber, pin).orElseThrow(() ->
 				new EntityNotFoundException("Account number " + accountNumber + " not found"));
 	}
@@ -37,8 +49,13 @@ public class AccountServiceImpl implements AccountService{
 	@Override
 	public Account searchAccountByAccountNumber(String accountNumber) {
 		if(isInvalidFormatAccountNumber(accountNumber))
-			throw new RuntimeException("Unhandled exception");
+			throw new RuntimeException("Invalid format for Account Number");
 		return accountRepository.findById(accountNumber).orElseThrow(() ->
 				new EntityNotFoundException("Account number " + accountNumber + " not found"));
 		}
+
+	@Override
+	public List<Account> findAll() {
+		return accountRepository.findAll();
+	}
 }

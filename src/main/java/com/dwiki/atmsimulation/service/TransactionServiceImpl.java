@@ -32,11 +32,11 @@ public class TransactionServiceImpl implements TransactionService{
 
 		Transaction transaction = new Transaction(sourceAccountNumber, Constant.TRANSACTION_TYPE_WITHDRAW,
 				amount, "-", "-");
-		decreaseBalance(amount, account);
+		account.decreaseBalance(amount);
 
-		fileUtil.saveTransaction(Constant.TRANSACTION_FILE_PATH, transaction);
+		Transaction result =  transactionRepository.save(transaction);
 		accountRepository.save(account);
-		transactionRepository.save(transaction);
+		fileUtil.saveTransaction(Constant.TRANSACTION_FILE_PATH, result);
 	}
 
 	@Override
@@ -48,16 +48,16 @@ public class TransactionServiceImpl implements TransactionService{
 		balanceValidation(sourceAccount, transferAmount);
 		transferValidation(sourceAccount, destinationAccount);
 
-		decreaseBalance(transferAmount, sourceAccount);
-		increaseBalance(transferAmount, destinationAccount);
+		sourceAccount.decreaseBalance(transferAmount);
+		destinationAccount.increaseBalance(transferAmount);
 
 		Transaction transaction = new Transaction(sourceAccountNumber, Constant.TRANSACTION_TYPE_TRANSFER,
 				transferAmount, destinationAccountNumber, referenceNumber);
 
 		Transaction result =  transactionRepository.save(transaction);
-		fileUtil.saveTransaction(Constant.TRANSACTION_FILE_PATH, result);
 		accountRepository.save(sourceAccount);
 		accountRepository.save(destinationAccount);
+		fileUtil.saveTransaction(Constant.TRANSACTION_FILE_PATH, result);
 	}
 
 	@Override
@@ -68,6 +68,20 @@ public class TransactionServiceImpl implements TransactionService{
 				(account.getAccountNumber(), account.getAccountNumber());
 	}
 
+	@Override
+	public void depositTransactionProcess(Integer amount, String accountNumber) {
+		Account account = accountService.searchAccountByAccountNumber(accountNumber);
+		transactionAmountValidation(amount);
+
+		Transaction transaction = new Transaction(accountNumber, Constant.TRANSACTION_TYPE_DEPOSIT,
+				amount, "-", "-");
+		account.increaseBalance(amount);
+
+		Transaction result =  transactionRepository.save(transaction);
+		accountRepository.save(account);
+		fileUtil.saveTransaction(Constant.TRANSACTION_FILE_PATH, result);
+	}
+
 	private void balanceValidation(Account account, Integer amount) {
 		if (account.getBalance() < amount) {
 			throw new NumberFormatException("Insufficient balance $" + amount);
@@ -76,16 +90,8 @@ public class TransactionServiceImpl implements TransactionService{
 
 	private void transactionAmountValidation(Integer amountWithdraw) {
 		if (amountWithdraw > 1000 || amountWithdraw < 1) {
-			throw new NumberFormatException("Maximum amount for the transaction is $1000 and minimum is 1");
+			throw new NumberFormatException("Maximum amount for the transaction is $1000 and minimum is $1");
 		}
-	}
-
-	private void increaseBalance(Integer amount, Account destinationAccount) {
-		destinationAccount.setBalance(destinationAccount.getBalance() + amount);
-	}
-
-	private void decreaseBalance(Integer amount, Account sourceAccount) {
-		sourceAccount.setBalance(sourceAccount.getBalance() - amount);
 	}
 
 	private void transferValidation(Account sourceAccount, Account destinationAccount) {

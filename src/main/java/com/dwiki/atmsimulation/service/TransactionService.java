@@ -13,4 +13,6 @@ public interface TransactionService {
                                        String destinationAccountNumber, Integer transferAmount, String referenceNumber);
 
     List<Transaction> lastTransaction(String accountNumber);
+
+    void depositTransactionProcess(Integer amount, String accountNumber);
 }

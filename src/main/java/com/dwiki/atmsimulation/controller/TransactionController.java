@@ -6,6 +6,8 @@ import com.dwiki.atmsimulation.service.AccountService;
 import com.dwiki.atmsimulation.service.TransactionService;
 import com.dwiki.atmsimulation.util.DataUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,8 +49,8 @@ public class TransactionController {
         String referenceNumber = (String) session.getAttribute("referenceNumber");
         String recipientAccountNumber = (String) session.getAttribute("recipientAccountNumber");
         Integer amount = (Integer) session.getAttribute("amount");
-        transactionService.transferTransactionProcess(account.getAccountNumber(), recipientAccountNumber, amount, referenceNumber);
         account = accountService.searchAccountByAccountNumber(account.getAccountNumber());
+        transactionService.transferTransactionProcess(account.getAccountNumber(), recipientAccountNumber, amount, referenceNumber);
         session.setAttribute("account", account);
         return "redirect:/dashboard";
     }
@@ -80,5 +82,33 @@ public class TransactionController {
         List<Transaction> transactions= transactionService.lastTransaction(account.getAccountNumber());
         modelMap.put("transactions", transactions);
         return "transaction-history-page";
+    }
+
+
+    @PostMapping("/api/withdraw")
+    ResponseEntity<Void> withdrawAPI(@RequestParam Integer amount, String accountNumber){
+        Account account = accountService.searchAccountByAccountNumber(accountNumber);
+        transactionService.withDrawTransactionProcess(amount,account.getAccountNumber());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/api/deposit")
+    ResponseEntity<Void> depositAPI(@RequestParam Integer amount, String accountNumber){
+        Account account = accountService.searchAccountByAccountNumber(accountNumber);
+        transactionService.depositTransactionProcess(amount,account.getAccountNumber());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping(value = "/api/history")
+    public ResponseEntity<List<Transaction>> getTransactionHistory(@RequestParam String accountNumber) {
+        return ResponseEntity.ok(transactionService.lastTransaction(accountNumber));
+    }
+
+    @PostMapping("/api/transfer")
+    ResponseEntity<Void> transferAPI(@RequestParam Integer amount, String accountNumber, String recipientAccountNumber){
+        Account account = accountService.searchAccountByAccountNumber(accountNumber);
+        String referenceNumber = dataUtil.generateReferenceNumber().toString();
+        transactionService.transferTransactionProcess(account.getAccountNumber(), recipientAccountNumber, amount, referenceNumber);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

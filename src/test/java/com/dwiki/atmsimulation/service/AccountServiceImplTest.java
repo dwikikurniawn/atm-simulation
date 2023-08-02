@@ -63,11 +63,11 @@ class AccountServiceImplTest {
     @DisplayName("Search Account By Account Number throw exception when  data is not exist")
     void whenSearchAccountByAccountNumber_willThrowAnException_whenDataIsNotExist() {
         String accountNumber = "112233";
-        Optional<Account> account = Optional.empty();
+        Optional<Account> invalidAccount = Optional.empty();
 
         when(dataUtil.accountNumberValidationFormat(accountNumber)).thenReturn(true);
         when(accountRepository.findById(accountNumber))
-                .thenReturn(account);
+                .thenReturn(invalidAccount);
 
         assertThrows(EntityNotFoundException.class, () -> accountService.searchAccountByAccountNumber(accountNumber));
         verify(accountRepository, times(1)).findById(accountNumber);

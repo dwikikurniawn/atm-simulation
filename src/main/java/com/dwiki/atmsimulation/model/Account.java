@@ -22,4 +22,12 @@ public class Account {
 	private String name;
 	private String pin;
 	private Integer balance;
+
+	public void increaseBalance(Integer amount) {
+		this.balance=this.balance + amount;
+	}
+
+	public void decreaseBalance(Integer amount) {
+		this.balance=this.balance - amount;
+	}
 }
